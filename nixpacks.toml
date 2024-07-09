@@ -12,10 +12,11 @@ cmds = [
 
 [phases.setup]
 nixPkgs = [
-'(php82.withExtensions (pe: pe.enabled ++ [ pe.imagick ]))',
+'(php82.withExtensions (pe: pe.enabled ++ [ pe.all.imagick ]))',
 'nginx',
 'libmysqlclient',
 'php82Packages.composer',
+'php82Extensions.imagick',
 'nodejs_18',
 'npm-9_x',
 ]
