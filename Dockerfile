@@ -1,7 +1,8 @@
 FROM docker.io/bitnami/laravel:latest
 
+# Install required packages and PHP extensions
 USER root
-RUN install_packages libpq-dev php-dev
+RUN install_packages libpq-dev php-dev build-essential
 RUN pecl install pdo_pgsql pgsql
 RUN echo "extension=pdo_pgsql.so" > /opt/bitnami/php/etc/php.ini
 RUN echo "extension=pgsql.so" >> /opt/bitnami/php/etc/php.ini
