@@ -1,0 +1,10 @@
+[phases.setup]
+# Ensure PHP and the required build tools are installed
+apt_packages = ["php", "php-dev", "libmagickwand-dev", "pkg-config"]
+
+[phases.build]
+# Install PHP Imagick extension using PECL
+commands = [
+  "pecl install imagick",
+  "docker-php-ext-enable imagick"
+]
