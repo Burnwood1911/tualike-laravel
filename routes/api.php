@@ -13,6 +13,8 @@ Route::get('/user', function (Request $request) {
 Route::get('cards/get-cards', [CardController::class, 'getCards']);
 Route::get('cards/get-card/{id}', [CardController::class, 'getCard']);
 
+Route::get('cards/getCardCategories', [CardController::class, 'getCardCategories']);
+
 Route::post('event/scan', [EventController::class, 'scan']);
 
 Route::post('orders', [OrderController::class, 'store']);
