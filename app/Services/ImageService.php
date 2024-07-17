@@ -7,25 +7,19 @@ use App\Models\Guest;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Intervention\Image\Drivers\Gd\Encoders\PngEncoder;
-use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Intervention\Image\Laravel\Facades\Image;
 use Intervention\Image\Typography\FontFactory;
-
-
-
-
-
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class ImageService
 {
-
     public function generateQrCode($string)
     {
         $qrCode = QrCode::format('png')
             ->size(250)
             ->generate($string);
 
-        $tempImagePath = tempnam(sys_get_temp_dir(), 'qr_code') . '.png';
+        $tempImagePath = tempnam(sys_get_temp_dir(), 'qr_code').'.png';
         file_put_contents($tempImagePath, $qrCode);
         $qrImage = Image::read($tempImagePath);
 
@@ -33,8 +27,6 @@ class ImageService
 
         return $qrImage;
     }
-
-
 
     public function encode(Guest $guest, Card $card)
     {
@@ -55,8 +47,7 @@ class ImageService
         $inviteTypeX = $card->invite_x;
         $inviteTypeY = $card->invite_y;
 
-
-        $cImage->place($qrImage, 'bottom-left');
+        $cImage->place($qrImage, 'bottom-right');
 
         $cImage->text(ucwords(strtolower($guest->name)), $nameX, $nameY, function (FontFactory $font) use ($card) {
             $font->filename(public_path('fonts/GreatVibes-Regular.ttf'));
@@ -64,7 +55,7 @@ class ImageService
             $font->color('fff');
         });
 
-        if (!is_null($guest->guest_type)) {
+        if (! is_null($guest->guest_type)) {
 
             $cImage->text(ucwords(strtolower($guest->guest_type)), $inviteTypeX, $inviteTypeY, function (FontFactory $font) use ($card) {
                 $font->filename(public_path('fonts/GreatVibes-Regular.ttf'));
@@ -73,10 +64,9 @@ class ImageService
             });
         }
 
-
         $imageBytes = (string) $cImage->encode(new PngEncoder());
         $unique = Str::random(8);
-        $filename = Str::slug($guest->name) . '-' . $unique . '.png';
+        $filename = Str::slug($guest->name).'-'.$unique.'.png';
 
         Storage::disk('minio')->put($filename, $imageBytes, 'public');
 
@@ -97,11 +87,11 @@ class ImageService
         return $stringStart;
     }
 
-
-    private  function calculateStringWidth($string, $fontSize, $fontFile)
+    private function calculateStringWidth($string, $fontSize, $fontFile)
     {
         $bbox = imagettfbbox($fontSize, 0, $fontFile, $string);
         $stringWidth = $bbox[2] - $bbox[0];
+
         return $stringWidth;
     }
 }
