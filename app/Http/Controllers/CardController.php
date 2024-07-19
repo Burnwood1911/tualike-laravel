@@ -22,9 +22,9 @@ class CardController extends Controller
     }
 
     public function getCards()
-    {
+        {
 
-        $cards = Card::all();
+            $cards = Card::all();
 
         $result = [
             'statusCode' => 200,

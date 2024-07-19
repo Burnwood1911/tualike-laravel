@@ -52,7 +52,7 @@ class ImageService
         $cImage->text(ucwords(strtolower($guest->name)), $nameX, $nameY, function (FontFactory $font) use ($card) {
             $font->filename(public_path('fonts/GreatVibes-Regular.ttf'));
             $font->size($card->name_font_size);
-            $font->color('fff');
+            $font->color('000');
         });
 
         if (! is_null($guest->guest_type)) {

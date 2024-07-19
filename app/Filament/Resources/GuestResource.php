@@ -3,21 +3,16 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\GuestResource\Pages;
-use App\Filament\Resources\GuestResource\RelationManagers;
 use App\Models\Guest;
+use App\Services\ImportService;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
-use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Str;
 use Filament\Tables\Actions\Action;
-use App\Services\ImportService;
-
-
-
-use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Table;
+use Illuminate\Support\Str;
 
 class GuestResource extends Resource
 {
@@ -46,7 +41,7 @@ class GuestResource extends Resource
                 Forms\Components\TextInput::make('qr')
                     ->required()->default(Str::random(4))->maxLength(4),
                 Forms\Components\TextInput::make('final_url')
-                   ->hiddenOn([Pages\EditGuest::class, Pages\CreateGuest::class])
+                    ->hiddenOn([Pages\EditGuest::class, Pages\CreateGuest::class])
                     ->maxLength(255),
 
                 Forms\Components\Select::make('event_id')
@@ -92,7 +87,11 @@ class GuestResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                Filter::make('event.name')->label('Event')->default(),
+                Filter::make('guest_type')->label('GuestType')->default(),
+                Filter::make('uses')->label('Uses')->default(),
+                Filter::make('generated')->label('GeneratedStatus')->default(),
+                Filter::make('created_at')->label('CreatedAt')->default(),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
@@ -106,7 +105,7 @@ class GuestResource extends Resource
                     ->action(function (Guest $record) {
                         app(ImportService::class)->dispatchSingle($record);
                     })
-                    ->requiresConfirmation()
+                    ->requiresConfirmation(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -120,7 +119,7 @@ class GuestResource extends Resource
                             ->relationship(name: 'event', titleAttribute: 'name')
                             ->searchable()
                             ->preload()
-                            ->native(false)
+                            ->native(false),
                     ])
                     ->action(function (array $data) {
                         app(ImportService::class)->handleGenerateBulk($data);
@@ -132,7 +131,7 @@ class GuestResource extends Resource
                             ->relationship(name: 'event', titleAttribute: 'name')
                             ->searchable()
                             ->preload()
-                            ->native(false)
+                            ->native(false),
                     ])
                     ->action(function (array $data) {
                         app(ImportService::class)->handleDispatchBulk($data);
@@ -147,11 +146,11 @@ class GuestResource extends Resource
                             ->relationship(name: 'event', titleAttribute: 'name')
                             ->searchable()
                             ->preload()
-                            ->native(false)
+                            ->native(false),
                     ])
                     ->action(function (array $data) {
                         app(ImportService::class)->handleImportAction($data);
-                    })
+                    }),
 
             ]);
     }
