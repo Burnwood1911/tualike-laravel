@@ -11,8 +11,8 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
-use Illuminate\Support\Str;
 
 class GuestResource extends Resource
 {
@@ -87,11 +87,24 @@ class GuestResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Filter::make('event.name')->label('Event')->default(),
-                Filter::make('guest_type')->label('GuestType')->default(),
-                Filter::make('uses')->label('Uses')->default(),
-                Filter::make('generated')->label('GeneratedStatus')->default(),
-                Filter::make('created_at')->label('CreatedAt')->default(),
+                SelectFilter::make('event')
+                    ->relationship('event', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->placeholder('All Events'),
+
+                Filter::make('generated')
+                    ->query(fn ($query) => $query->where('generated', true))
+                    ->label('Generated'),
+                Filter::make('not_generated')
+                    ->query(fn ($query) => $query->where('generated', false))
+                    ->label('Not Generated'),
+                Filter::make('dispatched')
+                    ->query(fn ($query) => $query->where('dispatched', true))
+                    ->label('Dispatched'),
+                Filter::make('not_dispatched')
+                    ->query(fn ($query) => $query->where('dispatched', false))
+                    ->label('Not Dispatched'),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
