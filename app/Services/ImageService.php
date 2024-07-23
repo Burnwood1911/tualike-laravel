@@ -27,10 +27,10 @@ class ImageService
         $backgroundSize = 300; // Adjust as needed
 
         // Create a white background image
-        $background = Image::canvas($backgroundSize, $backgroundSize, '#ffffff');
+        $background = Image::create($backgroundSize, $backgroundSize)->fill('#ffffff');
 
         // Insert the QR code image into the white background, centered
-        $background->insert($qrImage, 'center');
+        $background->place($qrImage, 'center');
 
         unlink($tempImagePath);
 
