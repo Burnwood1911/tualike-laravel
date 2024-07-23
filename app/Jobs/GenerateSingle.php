@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Models\Guest;
 use App\Services\ImageService;
+use Illuminate\Bus\Batchable;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -12,7 +13,7 @@ use Illuminate\Queue\SerializesModels;
 
 class GenerateSingle implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use Batchable, Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     protected $guest;
 
@@ -35,7 +36,7 @@ class GenerateSingle implements ShouldQueue
 
         $this->guest->update([
             'final_url' => $url,
-            'generated' => true
+            'generated' => true,
         ]);
     }
 }

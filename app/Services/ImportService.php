@@ -7,10 +7,14 @@ use App\Models\Event;
 use App\Models\Guest;
 use App\Models\MessageData;
 use App\Models\Messages;
+use Filament\Notifications\Notification;
+use Illuminate\Bus\Batch;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Facades\Excel;
+use Throwable;
 
 class GuestImport implements ToCollection
 {
@@ -34,19 +38,51 @@ class ImportService
 
     public function handleGenerateBulk(array $data)
     {
-
         $eventId = $data['event_id'];
 
         $guests = Guest::where('event_id', $eventId)
             ->where('generated', false)
             ->get();
 
-        foreach ($guests as $guest) {
+        $jobs = [];
 
-            GenerateSingle::dispatch($guest->id);
+        foreach ($guests as $guest) {
+            $jobs[] = new GenerateSingle($guest->id);
         }
 
+        Bus::batch($jobs)->allowFailures()->catch(function (Batch $batch, Throwable $e) {
+            Notification::make()
+                ->title('Batch Job Failed')
+                ->body($e->getMessage())
+                ->danger()
+                ->send();
+        })->progress(function (Batch $batch) {
+
+            Notification::make()
+                ->title('Batch Job Progress')
+                ->body('Processed job'.$batch->progress().' of '.$batch->totalJobs)
+                ->success()
+                ->send();
+
+        })->dispatch();
+
     }
+
+    // public function handleGenerateBulk(array $data)
+    // {
+
+    //     $eventId = $data['event_id'];
+
+    //     $guests = Guest::where('event_id', $eventId)
+    //         ->where('generated', false)
+    //         ->get();
+
+    //     foreach ($guests as $guest) {
+
+    //         GenerateSingle::dispatch($guest->id);
+    //     }
+
+    // }
 
     public function handleDispatchBulk(array $data)
     {

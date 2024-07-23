@@ -137,6 +137,7 @@ class GuestResource extends Resource
                     ])
                     ->action(function (array $data) {
                         app(ImportService::class)->handleGenerateBulk($data);
+
                     }),
                 Action::make('Dispatch')
                     ->form([
