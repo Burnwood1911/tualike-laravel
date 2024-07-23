@@ -23,10 +23,33 @@ class ImageService
         file_put_contents($tempImagePath, $qrCode);
         $qrImage = Image::read($tempImagePath);
 
+        // Define the size of the white background
+        $backgroundSize = 300; // Adjust as needed
+
+        // Create a white background image
+        $background = Image::canvas($backgroundSize, $backgroundSize, '#ffffff');
+
+        // Insert the QR code image into the white background, centered
+        $background->insert($qrImage, 'center');
+
         unlink($tempImagePath);
 
-        return $qrImage;
+        return $background;
     }
+    // public function generateQrCode($string)
+    // {
+    //     $qrCode = QrCode::format('png')
+    //         ->size(250)
+    //         ->generate($string);
+
+    //     $tempImagePath = tempnam(sys_get_temp_dir(), 'qr_code').'.png';
+    //     file_put_contents($tempImagePath, $qrCode);
+    //     $qrImage = Image::read($tempImagePath);
+
+    //     unlink($tempImagePath);
+
+    //     return $qrImage;
+    // }
 
     public function encode(Guest $guest, Card $card)
     {
@@ -52,7 +75,7 @@ class ImageService
         $cImage->text(ucwords(strtolower($guest->name)), $nameX, $nameY, function (FontFactory $font) use ($card) {
             $font->filename(public_path('fonts/GreatVibes-Regular.ttf'));
             $font->size($card->name_font_size);
-            $font->color('000');
+            $font->color($card->name_color);
         });
 
         if (! is_null($guest->guest_type)) {
@@ -60,7 +83,7 @@ class ImageService
             $cImage->text(ucwords(strtolower($guest->guest_type)), $inviteTypeX, $inviteTypeY, function (FontFactory $font) use ($card) {
                 $font->filename(public_path('fonts/GreatVibes-Regular.ttf'));
                 $font->size($card->invite_font_size);
-                $font->color('fff');
+                $font->color($card->type_color);
             });
         }
 

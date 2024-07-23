@@ -60,7 +60,13 @@ class ImportService
 
         foreach ($guests as $guest) {
 
-            $template = 'Habari [NAME] Karibu kwenye Harusi ya Amani na Witness siku ya Jumapili 21/07/2024 ukumbi ni  Mirado Sinza Dar es salaam. bonyeza hapa [LINK] kupata kadi yako au [CODE] kama code ya mwaliko onyesha ukifika ukumbinii. Karibu sana';
+            $event = Event::find($eventId);
+
+            $template = $event->sms_template;
+
+            $channel = $event->sms_channel;
+
+            // $template = 'Habari [NAME] Karibu kwenye Harusi ya Amani na Witness siku ya Jumapili 21/07/2024 ukumbi ni  Mirado Sinza Dar es salaam. bonyeza hapa [LINK] kupata kadi yako au [CODE] kama code ya mwaliko onyesha ukifika ukumbinii. Karibu sana';
 
             // $template = 'Habari [NAME] Karibu kwenye Harusi ya Franko na Ester siku ya Jumamosi 20/07/2024 ukumbi ni NHC Samora Dar es salaam. bonyeza hapa [LINK] kupata kadi yako au [CODE] kama code ya mwaliko onyesha ukifika ukumbinii. Karibu sana';
 
@@ -68,7 +74,7 @@ class ImportService
             $template = str_replace('[LINK]', $guest->final_url, $template);
             $template = str_replace('[CODE]', $guest->qr, $template);
 
-            $messageData = new MessageData('TUALIKE', $guest->phone, $template);
+            $messageData = new MessageData($channel, $guest->phone, $template);
 
             array_push($messages, $messageData);
 

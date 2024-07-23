@@ -20,6 +20,8 @@ return new class extends Migration
             $table->integer('name_end_x');
             $table->integer('name_y');
             $table->integer('name_font_size');
+            $table->string('name_color');
+            $table->string('type_color');
             $table->integer('invite_x')->nullable();
             $table->integer('invite_y')->nullable();
             $table->integer('invite_font_size')->nullable();

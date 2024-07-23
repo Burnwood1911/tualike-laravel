@@ -3,15 +3,13 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\CardResource\Pages;
-use App\Filament\Resources\CardResource\RelationManagers;
 use App\Models\Card;
 use Filament\Forms;
+use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class CardResource extends Resource
 {
@@ -25,29 +23,29 @@ class CardResource extends Resource
             ->schema([
                 Forms\Components\FileUpload::make('image')
                     ->image()
-                    ->disk("minio")
+                    ->disk('minio')
                     ->required()->columnSpanFull(),
                 Forms\Components\TextInput::make('price')
                     ->required()
                     ->numeric()
                     ->prefix('$'),
-                    Forms\Components\TextInput::make('name')
+                Forms\Components\TextInput::make('name')
                     ->required()->maxLength(255),
-                    Forms\Components\TextInput::make('name_start_x')
+                Forms\Components\TextInput::make('name_start_x')
                     ->required()->numeric(), Forms\Components\TextInput::make('name_end_x')
                     ->required()->numeric(), Forms\Components\TextInput::make('name_y')
                     ->required()->numeric(), Forms\Components\TextInput::make('name_font_size')
                     ->required()->numeric(), Forms\Components\TextInput::make('invite_font_size')
                     ->required()->numeric(), Forms\Components\TextInput::make('invite_x')
-                    ->required()->numeric(), Forms\Components\TextInput::make('invite_y')
-                 ,
+                    ->required()->numeric(), Forms\Components\TextInput::make('invite_y'),
+                ColorPicker::make('name_color'),
+                ColorPicker::make('type_color'),
                 Forms\Components\Select::make('category_id')
-                ->relationship(name: 'category', titleAttribute:'name')
-                ->searchable()
-                ->preload()
-                ->native(false)
-                    ->required()
-                  ,
+                    ->relationship(name: 'category', titleAttribute: 'name')
+                    ->searchable()
+                    ->preload()
+                    ->native(false)
+                    ->required(),
             ]);
     }
 
@@ -59,8 +57,7 @@ class CardResource extends Resource
                 // Tables\Columns\ImageColumn::make('image')->disk('minio'),
                 Tables\Columns\TextColumn::make('price')
                     ->money(currency: 'TZS'),
-                Tables\Columns\TextColumn::make('category.name')
-         ,
+                Tables\Columns\TextColumn::make('category.name'),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
