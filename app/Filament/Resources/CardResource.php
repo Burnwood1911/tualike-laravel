@@ -40,6 +40,8 @@ class CardResource extends Resource
                     ->required()->numeric(), Forms\Components\TextInput::make('invite_y'),
                 ColorPicker::make('name_color'),
                 ColorPicker::make('type_color'),
+                Forms\Components\TextInput::make('qr_position')
+                    ->required(),
                 Forms\Components\Select::make('category_id')
                     ->relationship(name: 'category', titleAttribute: 'name')
                     ->searchable()
