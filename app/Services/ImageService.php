@@ -70,7 +70,7 @@ class ImageService
         $inviteTypeX = $card->invite_x;
         $inviteTypeY = $card->invite_y;
 
-        $cImage->place($qrImage, 'bottom-right');
+        $cImage->place($qrImage, $card->qr_position);
 
         $cImage->text(ucwords(strtolower($guest->name)), $nameX, $nameY, function (FontFactory $font) use ($card) {
             $font->filename(public_path('fonts/GreatVibes-Regular.ttf'));
