@@ -62,7 +62,7 @@ class ImageService
 
         $axisStart = $card->name_start_x;
         $axisEnd = $card->name_end_x;
-        $stringStartPosition = $this->calculateStringCenterPosition($axisStart, $axisEnd, preg_replace('/\s+/', '', $guest->name), $card->name_font_size);
+        $stringStartPosition = $this->calculateStringCenterPosition($axisStart, $axisEnd, preg_replace('/\s+/', '', ucwords(strtolower($guest->name))), $card->name_font_size);
 
         $nameX = $stringStartPosition;
         $nameY = $card->name_y;
@@ -74,6 +74,8 @@ class ImageService
 
         $cImage->text(ucwords(strtolower($guest->name)), $nameX, $nameY, function (FontFactory $font) use ($card) {
             $font->filename(public_path('fonts/GreatVibes-Regular.ttf'));
+            $font->align('center');
+            $font->valign('middle');
             $font->size($card->name_font_size);
             $font->color($card->name_color);
         });
