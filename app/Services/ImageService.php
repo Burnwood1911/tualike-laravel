@@ -60,11 +60,24 @@ class ImageService
 
         $qrImage = $this->generateQrCode($guest->qr);
 
-        $axisStart = $card->name_start_x;
-        $axisEnd = $card->name_end_x;
-        $stringStartPosition = $this->calculateStringCenterPosition($axisStart, $axisEnd, preg_replace('/\s+/', '', ucwords(strtolower($guest->name))), $card->name_font_size);
+        // $axisStart = $card->name_start_x;
+        // $axisEnd = $card->name_end_x;
+        // $stringStartPosition = $this->calculateStringCenterPosition($axisStart, $axisEnd, preg_replace('/\s+/', '', ucwords(strtolower($guest->name))), $card->name_font_size);
 
-        $nameX = $stringStartPosition;
+        //
+
+        $targetX1 = $card->name_start_x;
+        $targetX2 = $card->name_end_x;
+        $targetY = $card->name_y;
+
+        $bbox = imagettfbbox($card->name_font_size, 0, public_path('fonts/GreatVibes-Regular.ttf'), ucwords(strtolower($guest->name)));
+
+        $textWidth = $bbox[2] - $bbox[0];
+
+        $targetWidth = $targetX2 - $targetX1;
+        $x = $targetX1 + ($targetWidth - $textWidth) / 2;
+
+        $nameX = $x;
         $nameY = $card->name_y;
 
         $inviteTypeX = $card->invite_x;
