@@ -12,10 +12,11 @@ use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Facades\Excel;
+use Throwable;
 
 class GuestImport implements ToCollection
 {
-    public function collection(Collection $rows)
+    public function collection(Collection $rows): Collection
     {
         return $rows;
     }
@@ -23,9 +24,9 @@ class GuestImport implements ToCollection
 
 class ImportService
 {
-    protected $imageService;
+    protected ImageService $imageService;
 
-    protected $smsService;
+    protected SmsService $smsService;
 
     public function __construct(ImageService $imageService, SmsService $smsService)
     {
@@ -33,7 +34,10 @@ class ImportService
         $this->smsService = $smsService;
     }
 
-    public function handleGenerateBulk(array $data)
+    /**
+     * @throws Throwable
+     */
+    public function handleGenerateBulk(array $data): void
     {
         $eventId = $data['event_id'];
 
@@ -51,23 +55,7 @@ class ImportService
 
     }
 
-    // public function handleGenerateBulk(array $data)
-    // {
-
-    //     $eventId = $data['event_id'];
-
-    //     $guests = Guest::where('event_id', $eventId)
-    //         ->where('generated', false)
-    //         ->get();
-
-    //     foreach ($guests as $guest) {
-
-    //         GenerateSingle::dispatch($guest->id);
-    //     }
-
-    // }
-
-    public function handleDispatchBulk(array $data)
+    public function handleDispatchBulk(array $data): void
     {
         $eventId = $data['event_id'];
 
@@ -91,7 +79,7 @@ class ImportService
 
             $messageData = new MessageData($channel, $guest->phone, $template);
 
-            array_push($messages, $messageData);
+            $messages[] = $messageData;
 
             $guest->update([
                 'dispatched' => true,
@@ -105,7 +93,7 @@ class ImportService
 
     }
 
-    public function dispatchSingle(Guest $guest)
+    public function dispatchSingle(Guest $guest): void
     {
 
         $event = Event::find($guest->event_id);
@@ -129,20 +117,16 @@ class ImportService
 
     }
 
-    public function generateSingle(Guest $guest)
+    public function generateSingle(Guest $guest): void
     {
         GenerateSingle::dispatch($guest->id);
     }
 
-    public function handleImportAction(array $data)
+    public function handleImportAction(array $data): void
     {
 
         $path = $data['attachment']->getPathname();
         $eventId = $data['event_id'];
-
-        $event = Event::find($eventId);
-
-        $card = $event->card();
 
         $excelData = Excel::toCollection(new GuestImport, $path);
 

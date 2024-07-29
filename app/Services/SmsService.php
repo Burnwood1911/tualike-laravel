@@ -4,17 +4,21 @@ namespace App\Services;
 
 use App\Models\Messages;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
 
 class SmsService
 {
-    protected $client;
+    protected Client $client;
 
     public function __construct(Client $client)
     {
         $this->client = $client;
     }
 
-    public function send(Messages $messages)
+    /**
+     * @throws GuzzleException
+     */
+    public function send(Messages $messages): int
     {
         $payload = json_encode($messages->toArray());
 

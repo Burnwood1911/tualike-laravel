@@ -7,13 +7,15 @@ use App\Models\Guest;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Intervention\Image\Drivers\Gd\Encoders\PngEncoder;
+use Intervention\Image\Interfaces\ImageInterface;
 use Intervention\Image\Laravel\Facades\Image;
 use Intervention\Image\Typography\FontFactory;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
+const FONTS_GREAT_VIBES_REGULAR_TTF = 'fonts/GreatVibes-Regular.ttf';
 class ImageService
 {
-    public function generateQrCode($string)
+    public function generateQrCode($string): ImageInterface
     {
         $qrCode = QrCode::format('png')
             ->size(250)
@@ -36,22 +38,8 @@ class ImageService
 
         return $background;
     }
-    // public function generateQrCode($string)
-    // {
-    //     $qrCode = QrCode::format('png')
-    //         ->size(250)
-    //         ->generate($string);
 
-    //     $tempImagePath = tempnam(sys_get_temp_dir(), 'qr_code').'.png';
-    //     file_put_contents($tempImagePath, $qrCode);
-    //     $qrImage = Image::read($tempImagePath);
-
-    //     unlink($tempImagePath);
-
-    //     return $qrImage;
-    // }
-
-    public function encode(Guest $guest, Card $card)
+    public function encode(Guest $guest, Card $card): string
     {
 
         $fileContents = Storage::disk('minio')->get($card->image);
@@ -60,30 +48,35 @@ class ImageService
 
         $qrImage = $this->generateQrCode($guest->qr);
 
-        $axisStart = $card->name_start_x;
-        $axisEnd = $card->name_end_x;
-        $stringStartPosition = $this->calculateStringCenterPosition($axisStart, $axisEnd, preg_replace('/\s+/', '', ucwords(strtolower($guest->name))), $card->name_font_size);
-
-        $nameX = $stringStartPosition;
-        $nameY = $card->name_y;
-
         $inviteTypeX = $card->invite_x;
         $inviteTypeY = $card->invite_y;
 
         $cImage->place($qrImage, $card->qr_position);
 
-        $cImage->text(ucwords(strtolower($guest->name)), $nameX, $nameY, function (FontFactory $font) use ($card) {
-            $font->filename(public_path('fonts/GreatVibes-Regular.ttf'));
-            $font->align('center');
-            $font->valign('middle');
-            $font->size($card->name_font_size);
-            $font->color($card->name_color);
-        });
+        $textImage = $this->createTextImage(ucwords(strtolower($guest->name)), $card->name_font_size, public_path(FONTS_GREAT_VIBES_REGULAR_TTF), $card->name_color);
+
+        $textWidth = $textImage->width();
+        $halfTextWidth = $textWidth / 2;
+
+        $fullImageWidth = $cImage->width();
+        $halfFullImageWidth = $fullImageWidth / 2;
+
+        $ultraOffset = $halfFullImageWidth - $halfTextWidth;
+
+        $cImage->place($textImage, 'top-left', $ultraOffset, $card->name_y);
+
+        // $cImage->text(ucwords(strtolower($guest->name)), $nameX, $nameY, function (FontFactory $font) use ($card) {
+        //     $font->filename(public_path(FONTS_GREAT_VIBES_REGULAR_TTF));
+        //     $font->align('center');
+        //     $font->valign('middle');
+        //     $font->size($card->name_font_size);
+        //     $font->color($card->name_color);
+        // });
 
         if (! is_null($guest->guest_type)) {
 
             $cImage->text(ucwords(strtolower($guest->guest_type)), $inviteTypeX, $inviteTypeY, function (FontFactory $font) use ($card) {
-                $font->filename(public_path('fonts/GreatVibes-Regular.ttf'));
+                $font->filename(public_path(FONTS_GREAT_VIBES_REGULAR_TTF));
                 $font->size($card->invite_font_size);
                 $font->color($card->type_color);
             });
@@ -95,28 +88,34 @@ class ImageService
 
         Storage::disk('minio')->put($filename, $imageBytes, 'public');
 
-        $url = "https://minio.alexrossi.xyz/tualike/$filename";
-
-        return $url;
+        return "https://minio.alexrossi.xyz/tualike/$filename";
     }
 
-    public function calculateStringCenterPosition($axisStart, $axisEnd, $string, $fontSize)
+    public function createTextImage($text, $fontSize, $fontPath, $hexColor)
     {
+        $img = Image::create(1, 1);
 
-        $axisWidth = $axisEnd - $axisStart;
-        $axisMidpoint = $axisStart + $axisWidth / 2;
+        $img->text($text, 0, 0, function ($font) use ($fontSize, $fontPath, $hexColor) {
+            $font->file($fontPath);
+            $font->size($fontSize);
+            $font->color($hexColor);
+            $font->valign('top');
+            $font->align('left');
+        });
 
-        $stringWidth = self::calculateStringWidth($string, $fontSize, public_path('fonts/GreatVibes-Regular.ttf'));
-        $stringStart = $axisMidpoint - $stringWidth / 2;
+        $box = imagettfbbox($fontSize, 0, $fontPath, $text);
+        $width = abs($box[4] - $box[0]);
+        $height = abs($box[5] - $box[1]);
 
-        return $stringStart;
-    }
+        $img = Image::create($width, $height);
+        $img->text($text, 0, 0, function ($font) use ($fontSize, $fontPath, $hexColor) {
+            $font->file($fontPath);
+            $font->size($fontSize);
+            $font->color($hexColor);
+            $font->valign('top');
+            $font->align('left');
+        });
 
-    private function calculateStringWidth($string, $fontSize, $fontFile)
-    {
-        $bbox = imagettfbbox($fontSize, 0, $fontFile, $string);
-        $stringWidth = $bbox[2] - $bbox[0];
-
-        return $stringWidth;
+        return $img;
     }
 }

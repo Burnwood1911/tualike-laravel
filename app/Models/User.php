@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -48,12 +47,12 @@ class User extends Authenticatable implements FilamentUser
         ];
     }
 
-    public function canAccessFilament()
+    public function canAccessFilament(): bool
     {
         return $this->group === 'Filament Users';
     }
 
-    public function isFilamentAdmin()
+    public function isFilamentAdmin(): bool
     {
         return $this->email === 'me@alexrossi.xyz';
     }

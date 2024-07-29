@@ -4,21 +4,21 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Guest extends Model
 {
     use HasFactory;
 
-    protected $guarded  = [];
+    protected $guarded = [];
 
-
-
-    public function event() {
+    public function event(): BelongsTo
+    {
 
         return $this->belongsTo(Event::class);
     }
 
-    protected static function boot()
+    protected static function boot(): void
     {
         parent::boot();
 
@@ -30,8 +30,5 @@ class Guest extends Model
             }
         });
 
-
     }
-
-
 }
