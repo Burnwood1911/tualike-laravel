@@ -44,6 +44,8 @@ class GuestResource extends Resource
                 Forms\Components\TextInput::make('final_url')
                     ->hiddenOn([Pages\EditGuest::class, Pages\CreateGuest::class])
                     ->maxLength(255),
+                Forms\Components\Toggle::make('hide_qr')
+                    ->required(),
 
                 Forms\Components\Select::make('event_id')
                     ->required()

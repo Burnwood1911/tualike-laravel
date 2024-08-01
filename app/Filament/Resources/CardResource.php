@@ -31,17 +31,15 @@ class CardResource extends Resource
                     ->prefix('$'),
                 Forms\Components\TextInput::make('name')
                     ->required()->maxLength(255),
-                Forms\Components\TextInput::make('name_start_x')
-                    ->required()->numeric(), Forms\Components\TextInput::make('name_end_x')
-                    ->required()->numeric(), Forms\Components\TextInput::make('name_y')
+
+                Forms\Components\TextInput::make('name_y')
                     ->required()->numeric(), Forms\Components\TextInput::make('name_font_size')
                     ->required()->numeric(), Forms\Components\TextInput::make('invite_font_size')
                     ->required()->numeric(), Forms\Components\TextInput::make('invite_x')
                     ->required()->numeric(), Forms\Components\TextInput::make('invite_y'),
                 ColorPicker::make('name_color'),
                 ColorPicker::make('type_color'),
-                Forms\Components\TextInput::make('qr_position')
-                    ->required(),
+                Forms\Components\TextInput::make('qr_position'),
                 Forms\Components\Select::make('category_id')
                     ->relationship(name: 'category', titleAttribute: 'name')
                     ->searchable()

@@ -16,13 +16,12 @@ return new class extends Migration
             $table->string('name');
             $table->string('image');
             $table->integer('price');
-            $table->integer('name_start_x');
-            $table->integer('name_end_x');
             $table->integer('name_y');
             $table->integer('name_font_size');
             $table->string('name_color');
             $table->string('type_color');
-            $table->string('qr_position');
+            $table->boolean('hide_qr')->default(false);
+            $table->string('qr_position')->nullable();
             $table->integer('invite_x')->nullable();
             $table->integer('invite_y')->nullable();
             $table->integer('invite_font_size')->nullable();
