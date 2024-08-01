@@ -2,8 +2,7 @@
 dependsOn = ['install']
 cmds = [
     'npm run build',
-    'echo "<<<<<<<<<<<<< CHANGING THE PHP INI >>>>>>>>>>>>>>"',
-    'PHP_INI_PATH=$(php -i | grep \'/php.ini\' | awk \'{print $6}\') && echo -e "\n upload_max_filesize = 100M\npost_max_size = 100M" >> $PHP_INI_PATH'
+    'PHP_INI_PATH=$(php -i | grep \'/php.ini\' | awk \'{print $6}\') && echo -e "\n upload_max_filesize = 100M\npost_max_size = 100M" >> $PHP_INI_PATH',
 ]
 
 [phases.install]
