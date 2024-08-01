@@ -1,3 +1,7 @@
+[variables]
+    UPLOAD_MAX_FILESIZE = '100M'
+    POST_MAX_SIZE = '100M'
+
 [phases.build]
 dependsOn = ['install']
 cmds = [
@@ -13,6 +17,7 @@ cmds = [
 ]
 
 [phases.setup]
+cmds = ['PHP_INI_PATH=$(php --ini | grep "Additional .ini files parsed:" | cut -d: -f2 | tr -d " "); echo "PHP_INI_PATH is $PHP_INI_PATH"; echo "upload_max_filesize=100M" >> $PHP_INI_PATH; echo "post_max_size=100M" >> $PHP_INI_PATH; echo "Content of php.ini below:"; cat "$PHP_INI_PATH"']
 nixPkgs = [
 '(php82.withExtensions (pe: pe.enabled ++ [ pe.all.imagick ]))',
 'nginx',
