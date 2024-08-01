@@ -136,7 +136,7 @@ class ImportService
 
             Guest::create([
                 'name' => $row[0],
-                'guest_type' => $row[1] == 'NONE' ? null : $row[1],
+                'guest_type' => $row[1],
                 'phone' => $row[2],
                 'uses' => $row[1] == 'SINGLE' ? 1 : 2,
                 'qr' => Str::random(4),

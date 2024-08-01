@@ -32,8 +32,8 @@ class GuestResource extends Resource
                     ->options([
                         'SINGLE' => 'SINGLE',
                         'DOUBLE' => 'DOUBLE',
-                    ])->native(false)
-                    ->required(),
+                        'NONE' => 'NONE',
+                    ])->native(false),
                 Forms\Components\TextInput::make('phone')
                     ->tel()
                     ->required()
@@ -44,8 +44,6 @@ class GuestResource extends Resource
                 Forms\Components\TextInput::make('final_url')
                     ->hiddenOn([Pages\EditGuest::class, Pages\CreateGuest::class])
                     ->maxLength(255),
-                Forms\Components\Toggle::make('hide_qr')
-                    ->required(),
 
                 Forms\Components\Select::make('event_id')
                     ->required()
@@ -67,8 +65,7 @@ class GuestResource extends Resource
                 Tables\Columns\TextColumn::make('phone')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('uses')
-                    ->numeric()
-                    ->sortable(),
+                    ->numeric(),
                 Tables\Columns\TextColumn::make('qr')
                     ->searchable(),
                 Tables\Columns\IconColumn::make('generated')

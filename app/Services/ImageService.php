@@ -75,7 +75,7 @@ class ImageService
         //     $font->color($card->name_color);
         // });
 
-        if (! is_null($guest->guest_type)) {
+        if ($guest->guest_type != 'NONE') {
 
             $cImage->text(ucwords(strtolower($guest->guest_type)), $inviteTypeX, $inviteTypeY, function (FontFactory $font) use ($card) {
                 $font->filename(public_path(FONTS_GREAT_VIBES_REGULAR_TTF));

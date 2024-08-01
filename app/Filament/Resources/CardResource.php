@@ -31,6 +31,8 @@ class CardResource extends Resource
                     ->prefix('$'),
                 Forms\Components\TextInput::make('name')
                     ->required()->maxLength(255),
+                Forms\Components\Toggle::make('hide_qr')
+                    ->required(),
 
                 Forms\Components\TextInput::make('name_y')
                     ->required()->numeric(), Forms\Components\TextInput::make('name_font_size')
