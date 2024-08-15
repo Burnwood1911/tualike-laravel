@@ -27,6 +27,8 @@ cmds = [
     'printf "[program:laravel-worker]\\nprocess_name=%%(program_name)s_%%(process_num)02d\\ncommand=php artisan queue:work --sleep=3 --tries=3 --timeout=90\\nautostart=true\\nautorestart=true\\nuser=root\\nnumprocs=1\\nredirect_stderr=true\\nstdout_logfile=/var/log/laravel-worker.log\\n" > /etc/supervisor/conf.d/laravel-worker.conf',
     # Start Supervisor service
     'service supervisor start',
+    # Add a delay to ensure supervisord is running
+    'sleep 5',
     # Reread Supervisor configuration and update
     'supervisorctl reread',
     'supervisorctl update',
