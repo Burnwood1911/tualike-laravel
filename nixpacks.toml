@@ -24,10 +24,14 @@ cmds = [
     'apt-get update && apt-get install -y supervisor',
     # Create Supervisor configuration for Laravel queues
     'printf "[program:laravel-worker]\\nprocess_name=%%(program_name)s_%%(process_num)02d\\ncommand=php artisan queue:work --sleep=3 --tries=3 --timeout=90\\nautostart=true\\nautorestart=true\\nuser=root\\nnumprocs=1\\nredirect_stderr=true\\nstdout_logfile=/var/log/laravel-worker.log\\n" > /etc/supervisor/conf.d/laravel-worker.conf',
+    # Configure supervisord with specific settings
+    'printf "[supervisord]\\nuser=root\\n" > /etc/supervisor/supervisord.conf',
+    'printf "[unix_http_server]\\nfile=/var/run/supervisor.sock\\nchmod=0700\\n" >> /etc/supervisor/supervisord.conf',
+    'printf "[supervisorctl]\\nserverurl=unix:///var/run/supervisor.sock\\n" >> /etc/supervisor/supervisord.conf',
     # Start supervisord directly
     'supervisord -c /etc/supervisor/supervisord.conf',
-    # Add a delay to ensure supervisord is running
-    'sleep 5',
+    # Add a longer delay to ensure supervisord is running
+    'sleep 10',
     # Check if supervisord is running properly
     'supervisorctl status || (echo "Supervisor failed to start" && cat /var/log/supervisor/supervisord.log && exit 1)',
     # Reread Supervisor configuration and update
