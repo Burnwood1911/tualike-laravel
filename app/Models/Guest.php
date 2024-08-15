@@ -28,7 +28,7 @@ class Guest extends Model
             } elseif ($model->guest_type === 'DOUBLE') {
                 $model->uses = 2;
             } else {
-                $model->uses = 0;
+                $model->uses = 1;
             }
         });
 
