@@ -20,7 +20,7 @@ cmds = [
 [phases.setup]
 cmds = [
     'PHP_INI_PATH=$(php --ini | grep "Additional .ini files parsed:" | cut -d: -f2 | tr -d " "); echo "PHP_INI_PATH is $PHP_INI_PATH"; echo "memory_limit=2048M" >> $PHP_INI_PATH; echo "upload_max_filesize=100M" >> $PHP_INI_PATH; echo "post_max_size=100M" >> $PHP_INI_PATH; echo "Content of php.ini below:"; cat "$PHP_INI_PATH"',
-    'apt-get update && apt-get install -y supervisor',
+    'apt-get update && sudo apt-get install -y supervisor',
     '''echo "[program:laravel-worker]
 process_name=%(program_name)s_%(process_num)02d
 command=php artisan queue:work --sleep=3 --tries=3 --timeout=90
