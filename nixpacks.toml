@@ -178,7 +178,7 @@ http {
             include $!{nginx}/conf/fastcgi_params;
             include $!{nginx}/conf/fastcgi.conf;
 
-            fastcgi_param PHP_VALUE "upload_max_filesize=30M \n post_max_size=35M";
+            fastcgi_param PHP_VALUE "upload_max_filesize=100M \n post_max_size=100M \n memory_limit=2048M";
         }
 
         location ~ /\.(?!well-known).* {
