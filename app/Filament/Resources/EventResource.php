@@ -30,8 +30,8 @@ class EventResource extends Resource
                     ->required()
                     ->maxLength(255),
                 Forms\Components\TextInput::make('sms_template')
-                    ->required()
-                    ->maxLength(255),
+                    ->required(),
+
                 Forms\Components\Select::make('sms_channel')
                     ->options([
                         'TUALIKE' => 'TUALIKE',
