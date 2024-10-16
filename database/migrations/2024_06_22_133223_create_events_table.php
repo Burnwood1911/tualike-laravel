@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('date');
             $table->string('location');
-            $table->string('sms_template');
+            $table->text('sms_template');
             $table->string('sms_channel');
             $table->boolean('security');
             $table->foreignId('card_id')->constrained()->cascadeOnDelete();
