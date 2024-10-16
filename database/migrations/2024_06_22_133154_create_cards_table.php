@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('image');
             $table->integer('price');
             $table->integer('name_y');
+            $table->integer('x_offset');
             $table->integer('name_font_size');
             $table->string('name_color');
             $table->string('type_color');

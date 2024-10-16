@@ -65,7 +65,7 @@ class ImageService
         $fullImageWidth = $cImage->width();
         $halfFullImageWidth = $fullImageWidth / 2;
 
-        $ultraOffset = $halfFullImageWidth - $halfTextWidth;
+        $ultraOffset = $halfFullImageWidth - $halfTextWidth - $card->x_offset;
 
         $cImage->place($textImage, 'top-left', $ultraOffset, $card->name_y);
 

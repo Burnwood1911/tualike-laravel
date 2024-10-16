@@ -39,6 +39,8 @@ class CardResource extends Resource
                     ->required()->numeric(), Forms\Components\TextInput::make('invite_font_size')
                     ->required()->numeric(), Forms\Components\TextInput::make('invite_x')
                     ->required()->numeric(), Forms\Components\TextInput::make('invite_y'),
+                    Forms\Components\TextInput::make('x_offset')
+                    ->required()->numeric()->default(0),
                 ColorPicker::make('name_color'),
                 ColorPicker::make('type_color'),
                 Forms\Components\TextInput::make('qr_position'),
