@@ -45,4 +45,18 @@ class EventController extends Controller
             ]);
         }
     }
+
+    public function getGuests(int $id)
+    {
+        $guests = Guest::where('event_id', $id)->get();
+
+
+        $result = [
+            'statusCode' => 200,
+            'data' => $guests,
+            'message' => 'Guests retrieved successfully',
+        ];
+
+        return response()->json($result, $result['statusCode']);
+    }
 }

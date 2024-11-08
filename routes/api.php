@@ -15,6 +15,9 @@ Route::get('cards/get-card/{id}', [CardController::class, 'getCard']);
 
 Route::get('cards/getCardCategories', [CardController::class, 'getCardCategories']);
 
+Route::get('event/getGuests/{id}', [EventController::class, 'getGuests']);
+
+
 Route::post('event/scan', [EventController::class, 'scan']);
 
 Route::post('orders', [OrderController::class, 'store']);
