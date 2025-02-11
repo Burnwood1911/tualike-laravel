@@ -56,14 +56,14 @@ nginx -c /etc/nginx.conf
 
 "supervisord.conf" = '''
 [unix_http_server]
-file=/assets/supervisor.sock
+file=/tmp/supervisor.sock
 
 [supervisord]
 logfile=/var/log/supervisord.log
 logfile_maxbytes=50MB
 logfile_backups=10
 loglevel=info
-pidfile=/assets/supervisord.pid
+pidfile=/tmp/supervisord.pid
 nodaemon=false
 silent=false
 minfds=1024
@@ -73,7 +73,7 @@ minprocs=200
 supervisor.rpcinterface_factory = supervisor.rpcinterface:make_main_rpcinterface
 
 [supervisorctl]
-serverurl=unix:///assets/supervisor.sock
+serverurl=unix:///tmp/supervisor.sock
 
 [include]
 files = /etc/supervisor/conf.d/*.conf
@@ -132,7 +132,7 @@ http {
     error_log /var/log/nginx-error.log;
     sendfile     on;
     tcp_nopush   on;
-    server_names_hash_bucket_size 128; # this seems to be required for some vhosts
+    server_names_hash_bucket_size 128;
 
     server {
         listen ${PORT};
@@ -153,24 +153,14 @@ http {
 
         charset utf-8;
 
-        $if(IS_LARAVEL) (
-            location / {
-                try_files $uri $uri/ /index.php?$query_string;
-            }
-        ) else ()
-
-        $if(NIXPACKS_PHP_FALLBACK_PATH) (
-          location / {
-            try_files $uri $uri/ ${NIXPACKS_PHP_FALLBACK_PATH}?$query_string;
-          }
-        ) else ()
+        location / {
+            try_files $uri $uri/ /index.php?$query_string;
+        }
 
         location = /favicon.ico { access_log off; log_not_found off; }
         location = /robots.txt  { access_log off; log_not_found off; }
 
-        $if(IS_LARAVEL) (
-            error_page 404 /index.php;
-        ) else ()
+        error_page 404 /index.php;
 
         location ~ \.php$ {
             fastcgi_pass 127.0.0.1:9000;
