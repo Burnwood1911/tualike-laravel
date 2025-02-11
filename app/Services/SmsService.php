@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Messages;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use Illuminate\Support\Facades\Log;
 
 class SmsService
 {
@@ -20,7 +21,8 @@ class SmsService
      */
     public function send(Messages $messages): int
     {
-        $payload = json_encode($messages->toArray());
+        try {
+            $payload = json_encode($messages->toArray());
 
 
         $headers = [
@@ -36,6 +38,12 @@ class SmsService
             'body' => $payload,
         ]);
 
+        Log::info('Sent SMS with payload: {payload} and Response: {response}', ['payload' => $payload, 'response' => $response->getBody()->getContents()]);
+
         return $response->getStatusCode();
+        }catch(\Exception $e) {
+
+            Log::info('Error sending sms: {messgae}', ['message' => $e->getMessage()]);
+        }
     }
 }
