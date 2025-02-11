@@ -146,7 +146,7 @@ http {
     error_log /var/log/nginx-error.log;
     sendfile     on;
     tcp_nopush   on;
-    server_names_hash_bucket_size 128;
+    server_names_hash_bucket_size 128; # this seems to be required for some vhosts
 
     server {
         listen ${PORT};
@@ -167,15 +167,17 @@ http {
 
         charset utf-8;
 
-        $if(NIXPACKS_PHP_FALLBACK_PATH) (
-            location / {
-                try_files $uri $uri/ ${NIXPACKS_PHP_FALLBACK_PATH}?$query_string;
-            }
-        ) else (
+        $if(IS_LARAVEL) (
             location / {
                 try_files $uri $uri/ /index.php?$query_string;
             }
-        )
+        ) else ()
+
+        $if(NIXPACKS_PHP_FALLBACK_PATH) (
+          location / {
+            try_files $uri $uri/ ${NIXPACKS_PHP_FALLBACK_PATH}?$query_string;
+          }
+        ) else ()
 
         location = /favicon.ico { access_log off; log_not_found off; }
         location = /robots.txt  { access_log off; log_not_found off; }
