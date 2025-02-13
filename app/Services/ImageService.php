@@ -54,7 +54,15 @@ class ImageService
         $inviteTypeY = $card->invite_y;
 
         if ($card->hide_qr == false) {
-            $cImage->place($qrImage, $card->qr_position);
+
+            if($card->id == 12) {
+                $cImage->place($qrImage, $card->qr_position, 150);
+
+            }else {
+                $cImage->place($qrImage, $card->qr_position);
+
+            }
+
         }
 
         $textImage = $this->createTextImage(ucwords(strtolower($guest->name)), $card->name_font_size, public_path(FONTS_GREAT_VIBES_REGULAR_TTF), $card->name_color);
