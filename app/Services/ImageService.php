@@ -18,7 +18,7 @@ class ImageService
     public function generateQrCode($string): ImageInterface
     {
         $qrCode = QrCode::format('png')
-            ->size(250)
+            ->size(200)
             ->generate($string);
 
         $tempImagePath = tempnam(sys_get_temp_dir(), 'qr_code').'.png';
@@ -26,7 +26,7 @@ class ImageService
         $qrImage = Image::read($tempImagePath);
 
         // Define the size of the white background
-        $backgroundSize = 300; // Adjust as needed
+        $backgroundSize = 220; // Adjust as needed
 
         // Create a white background image
         $background = Image::create($backgroundSize, $backgroundSize)->fill('#ffffff');
