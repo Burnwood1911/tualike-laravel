@@ -56,7 +56,7 @@ class ImageService
         if ($card->hide_qr == false) {
 
             if($card->id == 12) {
-                $cImage->place($qrImage, $card->qr_position, 150);
+                $cImage->place($qrImage, $card->qr_position, 135);
 
             }else {
                 $cImage->place($qrImage, $card->qr_position);
