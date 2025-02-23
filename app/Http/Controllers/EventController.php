@@ -59,4 +59,42 @@ class EventController extends Controller
 
         return response()->json($result, $result['statusCode']);
     }
+
+
+
+    public function getCardPage($eventId, $guestId)
+    {
+        $guest = Guest::where('event_id', $eventId)
+            ->where('id', $guestId)
+            ->first();
+
+        return view('card', [
+            'guest' => $guest
+        ]);
+    }
+
+
+    public function updateAttendance(Request $request, $eventId, $guestId)
+    {
+        try {
+            $guest = Guest::where('event_id', $eventId)
+                ->where('id', $guestId)
+                ->firstOrFail();
+
+            $guest->update([
+                'attendance_status' => $request->attendance_status
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Attendance status updated successfully'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error updating attendance status'
+            ], 500);
+        }
+    }
+
 }

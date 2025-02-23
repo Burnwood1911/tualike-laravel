@@ -13,6 +13,7 @@ use Filament\Tables\Actions\Action;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Filament\Widgets\StatsOverviewWidget\Stat;
 use Illuminate\Support\Str;
 
 class GuestResource extends Resource
@@ -73,6 +74,14 @@ class GuestResource extends Resource
 
                 Tables\Columns\IconColumn::make('dispatched')
                     ->boolean(),
+                Tables\Columns\TextColumn::make('attendance_status')
+                    ->searchable()
+                    ->badge() // Optional: displays status as a badge
+                    ->color(fn (string $state): string => match ($state) {
+                        'attending' => 'success',
+                        'not_attending' => 'danger',
+                        default => 'warning',
+                    }),
                 Tables\Columns\TextColumn::make('event.name')
                     ->numeric()
                     ->sortable(),
@@ -105,6 +114,14 @@ class GuestResource extends Resource
                 Filter::make('not_dispatched')
                     ->query(fn ($query) => $query->where('dispatched', false))
                     ->label('Not Dispatched'),
+                SelectFilter::make('attendance_status')
+                    ->options([
+                        'attending' => 'Attending',
+                        'not_attending' => 'Not Attending',
+                        'pending' => 'Pending'
+                    ])
+                    ->placeholder('All Statuses')
+                    ->label('Attendance Status'),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
@@ -166,7 +183,7 @@ class GuestResource extends Resource
                         app(ImportService::class)->handleImportAction($data);
                     }),
 
-            ]);
+            ])->poll('60s');
     }
 
     public static function getRelations(): array

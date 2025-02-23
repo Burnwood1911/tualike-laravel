@@ -73,8 +73,11 @@ class ImportService
 
             $channel = $event->sms_channel;
 
+
+            $link = 'https://dockploy.alexrossi.xyz/guest/' .$eventId . "/" . $guest->id;
+
             $template = str_replace('[NAME]', $guest->name, $template);
-            $template = str_replace('[LINK]', $guest->final_url, $template);
+            $template = str_replace('[LINK]', $link, $template);
             $template = str_replace('[CODE]', $guest->qr, $template);
 
             $messageData = new MessageData($channel, $guest->phone, $template);
@@ -102,8 +105,10 @@ class ImportService
 
         $channel = $event->sms_channel;
 
+        $link = 'https://dockploy.alexrossi.xyz/guest/' .$event->id . "/" . $guest->id;
+
         $template = str_replace('[NAME]', $guest->name, $template);
-        $template = str_replace('[LINK]', $guest->final_url, $template);
+        $template = str_replace('[LINK]', $link, $template);
         $template = str_replace('[CODE]', $guest->qr, $template);
 
         $messageData = new MessageData($channel, $guest->phone, $template);
