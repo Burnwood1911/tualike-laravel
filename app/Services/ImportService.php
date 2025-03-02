@@ -74,7 +74,7 @@ class ImportService
             $channel = $event->sms_channel;
 
 
-            $link = 'https://laravel.alexrossi.xyz/guest/' .$eventId . "/" . $guest->id;
+            $link = 'https://tualike.com/guest/' .$eventId . "/" . $guest->id;
 
             $template = str_replace('[NAME]', $guest->name, $template);
             $template = str_replace('[LINK]', $link, $template);
@@ -105,7 +105,7 @@ class ImportService
 
         $channel = $event->sms_channel;
 
-        $link = 'https://laravel.alexrossi.xyz/guest/' .$event->id . "/" . $guest->id;
+        $link = 'https://tualike.com/guest/' .$event->id . "/" . $guest->id;
 
         $template = str_replace('[NAME]', $guest->name, $template);
         $template = str_replace('[LINK]', $link, $template);
