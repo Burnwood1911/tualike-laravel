@@ -39,12 +39,51 @@ class ImageService
         return $background;
     }
 
+    public function encodePreview(string $name, string $guestType, Card $card): string
+    {
+        $fileContents = Storage::disk('r2')->get($card->image);
+        $cImage = Image::read($fileContents);
 
+        // Generate a sample QR code if needed
+        if (!$card->hide_qr) {
+            $qrImage = $this->generateQrCode('preview-qr-code');
+
+            if($card->id == 12) {
+                $cImage->place($qrImage, $card->qr_position, 125);
+            } else {
+                $cImage->place($qrImage, $card->qr_position);
+            }
+        }
+
+        // Add the name text
+        $textImage = $this->createTextImage(ucwords(strtolower($name)), $card->name_font_size, public_path(FONTS_GREAT_VIBES_REGULAR_TTF), $card->name_color);
+
+        $textWidth = $textImage->width();
+        $halfTextWidth = $textWidth / 2;
+
+        $fullImageWidth = $cImage->width();
+        $halfFullImageWidth = $fullImageWidth / 2;
+
+        $ultraOffset = $halfFullImageWidth - $halfTextWidth - $card->x_offset;
+
+        $cImage->place($textImage, 'top-left', $ultraOffset, $card->name_y);
+
+        // Add guest type if provided
+        if ($guestType !== 'NONE') {
+            $cImage->text(ucwords(strtolower($guestType)), $card->invite_x, $card->invite_y, function (FontFactory $font) use ($card) {
+                $font->filename(public_path(FONTS_GREAT_VIBES_REGULAR_TTF));
+                $font->size($card->invite_font_size);
+                $font->color($card->type_color);
+            });
+        }
+
+        // Return base64 encoded image for preview
+        return 'data:image/png;base64,' . base64_encode((string) $cImage->encode(new PngEncoder()));
+    }
 
     public function encode(Guest $guest, Card $card): string
     {
-
-        $fileContents = Storage::disk('minio')->get($card->image);
+        $fileContents = Storage::disk('r2')->get($card->image);
 
         $cImage = Image::read($fileContents);
 
@@ -98,12 +137,10 @@ class ImageService
         $unique = Str::random(8);
         $filename = Str::slug($guest->name).'-'.$unique.'.png';
 
-        Storage::disk('minio')->put($filename, $imageBytes, 'public');
+        Storage::disk('r2')->put($filename, $imageBytes, 'public');
 
-        return "https://minio.alexrossi.xyz/tualike/$filename";
+        return env('R2_URL') . '/' . $filename;
     }
-
-
 
     public function createTextImage($text, $fontSize, $fontPath, $hexColor)
     {

@@ -23,7 +23,7 @@ class CardResource extends Resource
             ->schema([
                 Forms\Components\FileUpload::make('image')
                     ->image()
-                    ->disk('minio')
+                    ->disk('r2')
                     ->required()->columnSpanFull(),
                 Forms\Components\TextInput::make('price')
                     ->required()
@@ -58,7 +58,7 @@ class CardResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name'),
-                // Tables\Columns\ImageColumn::make('image')->disk('minio'),
+                // Tables\Columns\ImageColumn::make('image')->disk('r2'),
                 Tables\Columns\TextColumn::make('price')
                     ->money(currency: 'TZS'),
                 Tables\Columns\TextColumn::make('category.name'),
