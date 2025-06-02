@@ -7,14 +7,18 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::get('/privacy', function () {
+    return view('privacy');
+});
+Route::get('/terms', function () {
+    return view('terms');
+});
+
 Route::get('/info', function () {
     return view('info');
 });
-
 
 Route::get('/guest/{eventId}/{guestId}', [EventController::class, 'getCardPage']);
 Route::post('/guest/{eventId}/{guestId}/attendance', [EventController::class, 'updateAttendance'])->name('guest.update.attendance');
 
 Route::get('/test-r2', [App\Http\Controllers\TestR2Controller::class, 'testConnection']);
-
-
