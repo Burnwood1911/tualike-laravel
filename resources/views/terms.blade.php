@@ -17,7 +17,7 @@
     </head>
     <body class="font-sans antialiased dark:bg-black dark:text-white/50">
         <div class="container mx-auto px-4 py-16">
-            <h1 class="text-2xl font-bold">Privacy Policy</h1>
+            <h1 class="text-2xl font-bold">Terms of Use</h1>
             <div>
                 Welcome to Tualike, a mobile application that helps users send electronic invitations via WhatsApp or text messages. By using our application, you agree to these Terms of Use. If you do not agree with these Terms of Use, you may not use our application.
 
