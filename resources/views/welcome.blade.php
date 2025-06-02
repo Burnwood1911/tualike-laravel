@@ -136,10 +136,10 @@
             <div class="grid grid-cols-[repeat(auto-fit,minmax(228px,1fr))] gap-2.5 px-4 py-3 @3xl:grid-cols-4">
               <div class="flex flex-1 flex-col gap-4 rounded-xl border border-solid border-[#dedce5] bg-white p-6">
                 <div class="flex flex-col gap-1">
-                  <h1 class="text-[#131118] text-base font-bold leading-tight">Basic</h1>
+                  <h1 class="text-[#131118] text-base font-bold leading-tight">Ngorongoro</h1>
                   <p class="flex items-baseline gap-1 text-[#131118]">
-                    <span class="text-[#131118] text-4xl font-black leading-tight tracking-[-0.033em]">Free</span>
-                    <span class="text-[#131118] text-base font-bold leading-tight">/month</span>
+                    <span class="text-[#131118] text-4xl font-black leading-tight tracking-[-0.033em]">Tsh 1800</span>
+                    <span class="text-[#131118] text-base font-bold leading-tight">/350-500 invites</span>
                   </p>
                 </div>
                 <button
@@ -176,10 +176,10 @@
               </div>
               <div class="flex flex-1 flex-col gap-4 rounded-xl border border-solid border-[#dedce5] bg-white p-6">
                 <div class="flex flex-col gap-1">
-                  <h1 class="text-[#131118] text-base font-bold leading-tight">Premium</h1>
+                  <h1 class="text-[#131118] text-base font-bold leading-tight">Manyara</h1>
                   <p class="flex items-baseline gap-1 text-[#131118]">
-                    <span class="text-[#131118] text-4xl font-black leading-tight tracking-[-0.033em]">$9.99</span>
-                    <span class="text-[#131118] text-base font-bold leading-tight">/month</span>
+                    <span class="text-[#131118] text-4xl font-black leading-tight tracking-[-0.033em]">Tsh 2000</span>
+                    <span class="text-[#131118] text-base font-bold leading-tight">/250-300 invites</span>
                   </p>
                 </div>
                 <button
@@ -224,10 +224,10 @@
               </div>
               <div class="flex flex-1 flex-col gap-4 rounded-xl border border-solid border-[#dedce5] bg-white p-6">
                 <div class="flex flex-col gap-1">
-                  <h1 class="text-[#131118] text-base font-bold leading-tight">Ultimate</h1>
+                  <h1 class="text-[#131118] text-base font-bold leading-tight">Ruaha</h1>
                   <p class="flex items-baseline gap-1 text-[#131118]">
-                    <span class="text-[#131118] text-4xl font-black leading-tight tracking-[-0.033em]">$19.99</span>
-                    <span class="text-[#131118] text-base font-bold leading-tight">/month</span>
+                    <span class="text-[#131118] text-4xl font-black leading-tight tracking-[-0.033em]">Tsh 2300</span>
+                    <span class="text-[#131118] text-base font-bold leading-tight">/101-250 invites</span>
                   </p>
                 </div>
                 <button
