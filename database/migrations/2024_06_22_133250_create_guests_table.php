@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('qr');
             $table->string('final_url')->nullable();
             $table->boolean('dispatched')->default(false);
+            $table->boolean('whatsapp_dispatched')->default(false);
             $table->boolean('generated')->default(false);
             $table->foreignId('event_id')->constrained()->cascadeOnDelete();
             $table->timestamps();

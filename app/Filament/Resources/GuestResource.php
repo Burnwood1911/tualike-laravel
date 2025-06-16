@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\GuestResource\Pages;
@@ -13,7 +12,7 @@ use Filament\Tables\Actions\Action;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
-use Filament\Widgets\StatsOverviewWidget\Stat;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 
 class GuestResource extends Resource
@@ -33,7 +32,7 @@ class GuestResource extends Resource
                     ->options([
                         'SINGLE' => 'SINGLE',
                         'DOUBLE' => 'DOUBLE',
-                        'NONE' => 'NONE',
+                        'NONE'   => 'NONE',
                     ])->native(false),
                 Forms\Components\TextInput::make('phone')
                     ->tel()
@@ -74,13 +73,15 @@ class GuestResource extends Resource
 
                 Tables\Columns\IconColumn::make('dispatched')
                     ->boolean(),
+                Tables\Columns\IconColumn::make('whatsapp_dispatched')
+                    ->boolean(),
                 Tables\Columns\TextColumn::make('attendance_status')
                     ->searchable()
                     ->badge() // Optional: displays status as a badge
-                    ->color(fn (string $state): string => match ($state) {
-                        'attending' => 'success',
-                        'not_attending' => 'danger',
-                        default => 'warning',
+                    ->color(fn(string $state): string => match ($state) {
+                        'attending'                       => 'success',
+                        'not_attending'                   => 'danger',
+                        default                           => 'warning',
                     }),
                 Tables\Columns\TextColumn::make('event.name')
                     ->numeric()
@@ -103,22 +104,22 @@ class GuestResource extends Resource
                     ->placeholder('All Events'),
 
                 Filter::make('generated')
-                    ->query(fn ($query) => $query->where('generated', true))
+                    ->query(fn($query) => $query->where('generated', true))
                     ->label('Generated'),
                 Filter::make('not_generated')
-                    ->query(fn ($query) => $query->where('generated', false))
+                    ->query(fn($query) => $query->where('generated', false))
                     ->label('Not Generated'),
                 Filter::make('dispatched')
-                    ->query(fn ($query) => $query->where('dispatched', true))
+                    ->query(fn($query) => $query->where('dispatched', true))
                     ->label('Dispatched'),
                 Filter::make('not_dispatched')
-                    ->query(fn ($query) => $query->where('dispatched', false))
+                    ->query(fn($query) => $query->where('dispatched', false))
                     ->label('Not Dispatched'),
                 SelectFilter::make('attendance_status')
                     ->options([
-                        'attending' => 'Attending',
+                        'attending'     => 'Attending',
                         'not_attending' => 'Not Attending',
-                        'pending' => 'Pending'
+                        'pending'       => 'Pending',
                     ])
                     ->placeholder('All Statuses')
                     ->label('Attendance Status'),
@@ -142,48 +143,91 @@ class GuestResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ])->headerActions([
-                Action::make('Generate')
-                    ->form([
-                        Forms\Components\Select::make('event_id')
-                            ->required()
-                            ->relationship(name: 'event', titleAttribute: 'name')
-                            ->searchable()
-                            ->preload()
-                            ->native(false),
-                    ])
-                    ->action(function (array $data) {
-                        app(ImportService::class)->handleGenerateBulk($data);
+            Action::make('Generate')
+                ->form([
+                    Forms\Components\Select::make('event_id')
+                        ->required()
+                        ->relationship(name: 'event', titleAttribute: 'name')
+                        ->searchable()
+                        ->preload()
+                        ->native(false),
+                ])
+                ->action(function (array $data) {
+                    app(ImportService::class)->handleGenerateBulk($data);
 
-                    }),
-                Action::make('Dispatch')
-                    ->form([
-                        Forms\Components\Select::make('event_id')
-                            ->required()
-                            ->relationship(name: 'event', titleAttribute: 'name')
-                            ->searchable()
-                            ->preload()
-                            ->native(false),
-                    ])
-                    ->action(function (array $data) {
-                        app(ImportService::class)->handleDispatchBulk($data);
-                    }),
-                Action::make('import')
-                    ->form([
-                        Forms\Components\FileUpload::make('attachment')
-                            ->required()
-                            ->storeFiles(false),
-                        Forms\Components\Select::make('event_id')
-                            ->required()
-                            ->relationship(name: 'event', titleAttribute: 'name')
-                            ->searchable()
-                            ->preload()
-                            ->native(false),
-                    ])
-                    ->action(function (array $data) {
-                        app(ImportService::class)->handleImportAction($data);
-                    }),
+                }),
+            Action::make('Dispatch')
+                ->form([
+                    Forms\Components\Select::make('event_id')
+                        ->required()
+                        ->relationship(name: 'event', titleAttribute: 'name')
+                        ->searchable()
+                        ->preload()
+                        ->native(false),
+                ])
+                ->action(function (array $data) {
+                    app(ImportService::class)->handleDispatchBulk($data);
+                }),
+            Action::make('whatsapp')
+                ->label('Whatsapp')
+                ->form([
+                    Forms\Components\Select::make('event_id')
+                        ->required()
+                        ->relationship(name: 'event', titleAttribute: 'name')
+                        ->searchable()
+                        ->preload()
+                        ->native(false),
+                    Forms\Components\Select::make('template_id')
+                        ->label('Message Template')
+                        ->searchable()
+                        ->options(function (): array {
+                            try {
+                                $response = Http::withHeaders([
+                                    'Authorization' => 'Basic Yjg2YWRlYWIzZTNhMmQ2MzpaRGt3Wm1JMk5qUmxaVGsyWVdVM056aGlNelF3WkRjM1pqa3pNVE5rTjJSbE5tWTRZamhoTVRVMk56VmtPV00yWldJNFltWmlNalZqTlRJM1lUZzJaZz09',
+                                    'Content-Type'  => 'application/json',
+                                ])->get('https://apichatcore.beem.africa/v1/message-templates/list');
 
-            ])->poll('60s');
+                                if ($response->successful()) {
+                                    $data = $response->json();
+
+                                    return collect($data['data'] ?? [])
+                                        ->mapWithKeys(function ($template) {
+                                            return [$template['id'] => $template['name']];
+                                        })
+                                        ->toArray();
+                                }
+                            } catch (\Exception $e) {
+                                \Log::error('Failed to fetch templates: ' . $e->getMessage());
+                            }
+
+                            return [];
+                        })
+                        ->placeholder('Select a template...')
+                        ->required(),
+                ])
+                ->action(function (array $data): void {
+                    $templateId = $data['template_id'];
+
+                    app(ImportService::class)->handleDispatchWhatsapp($data);
+
+                }),
+            Action::make('import')
+                ->form([
+                    Forms\Components\FileUpload::make('attachment')
+                        ->required()
+                        ->storeFiles(false),
+                    Forms\Components\Select::make('event_id')
+                        ->required()
+                        ->relationship(name: 'event', titleAttribute: 'name')
+                        ->searchable()
+                        ->preload()
+                        ->native(false),
+                ])
+                ->action(function (array $data) {
+                    app(ImportService::class)->handleImportAction($data);
+                }),
+
+        ])->poll('60s');
     }
 
     public static function getRelations(): array
@@ -196,10 +240,10 @@ class GuestResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListGuests::route('/'),
+            'index'  => Pages\ListGuests::route('/'),
             'create' => Pages\CreateGuest::route('/create'),
-            'view' => Pages\ViewGuest::route('/{record}'),
-            'edit' => Pages\EditGuest::route('/{record}/edit'),
+            'view'   => Pages\ViewGuest::route('/{record}'),
+            'edit'   => Pages\EditGuest::route('/{record}/edit'),
         ];
     }
 }
