@@ -2,6 +2,8 @@
 namespace App\Services;
 
 use App\Jobs\GenerateSingle;
+use App\Jobs\WhatsAppDispatchBulk;
+use App\Jobs\WhatsAppDispatchSingle;
 use App\Models\Event;
 use App\Models\Guest;
 use App\Models\MessageData;
@@ -58,59 +60,10 @@ class ImportService
     public function handleDispatchWhatsapp(array $data): void
     {
         $eventId    = $data['event_id'];
-        $templateId = $data['template_id'];
+        $templateId = (int) $data['template_id'];
 
-        $guests = Guest::where('event_id', $eventId)
-            ->where('whatsapp_dispatched', false)
-            ->get();
-
-        foreach ($guests as $guest) {
-            $event = Event::find($eventId);
-            $link  = $guest->final_url;
-
-            // WhatsApp API call
-            $payload = [
-                'from_addr'           => '255696971941',
-                'destination_addr'    => [
-                    [
-                        'phoneNumber' => $guest->phone,
-                        'params'      => [
-                            $guest->name,
-                            $guest->qr,
-                        ],
-                    ],
-                ],
-                'channel'             => 'whatsapp',
-                'content'             => [
-                    'mediaUrl' => $link,
-                ],
-                'messageTemplateData' => [
-                    'isTemplateMessage' => true,
-                    'id'                => (int) $templateId,
-                ],
-            ];
-
-            try {
-                $response = Http::withHeaders([
-                    'Authorization' => 'Basic Yjg2YWRlYWIzZTNhMmQ2MzpaRGt3Wm1JMk5qUmxaVGsyWVdVM056aGlNelF3WkRjM1pqa3pNVE5rTjJSbE5tWTRZamhoTVRVMk56VmtPV00yWldJNFltWmlNalZqTlRJM1lUZzJaZz09',
-                    'Content-Type'  => 'application/json',
-                ])
-                    ->timeout(30)
-                    ->post('https://apibroadcast.beem.africa/v1/broadcast/template/api-send', $payload);
-
-                if ($response->successful()) {
-                    $guest->update([
-                        'whatsapp_dispatched' => true,
-                    ]);
-                    \Log::info("WhatsApp message sent successfully to {$guest->name}: " . $response->body());
-                } else {
-                    \Log::error("WhatsApp API error for {$guest->name}: " . $response->body() . " " . $link);
-                }
-            } catch (\Exception $e) {
-                \Log::error("WhatsApp API exception for {$guest->name}: " . $e->getMessage());
-            }
-
-        }
+        // Dispatch the bulk WhatsApp job
+        WhatsAppDispatchBulk::dispatch($eventId, $templateId);
     }
 
     public function handleDispatchBulk(array $data): void
@@ -181,48 +134,8 @@ class ImportService
 
     public function handleDispatchWhatsappSingle(Guest $guest, int $templateId): void
     {
-        $link = $guest->final_url;
-
-        $payload = [
-            'from_addr'           => '255696971941',
-            'destination_addr'    => [
-                [
-                    'phoneNumber' => $guest->phone,
-                    'params'      => [
-                        $guest->name,
-                        $guest->qr,
-                    ],
-                ],
-            ],
-            'channel'             => 'whatsapp',
-            'content'             => [
-                'mediaUrl' => $link,
-            ],
-            'messageTemplateData' => [
-                'isTemplateMessage' => true,
-                'id'                => $templateId,
-            ],
-        ];
-
-        try {
-            $response = Http::withHeaders([
-                'Authorization' => 'Basic Yjg2YWRlYWIzZTNhMmQ2MzpaRGt3Wm1JMk5qUmxaVGsyWVdVM056aGlNelF3WkRjM1pqa3pNVE5rTjJSbE5tWTRZamhoTVRVMk56VmtPV00yWldJNFltWmlNalZqTlRJM1lUZzJaZz09',
-                'Content-Type'  => 'application/json',
-            ])
-                ->timeout(30)
-                ->post('https://apibroadcast.beem.africa/v1/broadcast/template/api-send', $payload);
-
-            if ($response->successful()) {
-                $guest->update([
-                    'whatsapp_dispatched' => true,
-                ]);
-                \Log::info("WhatsApp message sent successfully to {$guest->name}: " . $response->body());
-            } else {
-                \Log::error("WhatsApp API error for {$guest->name}: " . $response->body() . " " . $link);
-            }
-        } catch (\Exception $e) {
-            \Log::error("WhatsApp API exception for {$guest->name}: " . $e->getMessage());
-        }
+        // Dispatch the single WhatsApp job
+        WhatsAppDispatchSingle::dispatch($guest->id, $templateId);
     }
 
     public function generateSingle(Guest $guest): void
