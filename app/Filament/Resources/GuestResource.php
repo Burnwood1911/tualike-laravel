@@ -303,29 +303,25 @@ class GuestResource extends Resource
                     $exportService = app(ImportService::class);
                     $exportData = $exportService->handleGuestExport($data);
                     
-                    // Store file in private storage with a unique key
-                    $exportKey = \Illuminate\Support\Str::uuid();
+                    // Store file in R2 with temporary path
                     $filename = $exportData['filename'];
-                    $path = 'temp-exports/' . $exportKey . '.csv';
+                    $path = 'temp-exports/' . \Illuminate\Support\Str::uuid() . '.csv';
                     
-                    \Storage::put($path, $exportData['content']);
+                    // Upload to R2
+                    \Storage::disk('r2')->put($path, $exportData['content']);
                     
-                    // Store metadata in cache for 1 hour
-                    \Cache::put("export_meta_{$exportKey}", [
-                        'filename' => $filename,
-                        'path' => $path,
-                        'created_at' => now()
-                    ], 3600);
+                    // Generate temporary signed URL (valid for 1 hour)
+                    $downloadUrl = \Storage::disk('r2')->temporaryUrl($path, now()->addHour());
                     
                     // Show success notification and provide download link
                     \Filament\Notifications\Notification::make()
                         ->title('Export Ready')
-                        ->body('Your guest export is ready for download.')
+                        ->body('Your guest export is ready for download. Link expires in 1 hour.')
                         ->success()
                         ->actions([
                             \Filament\Notifications\Actions\Action::make('download')
                                 ->label('Download CSV')
-                                ->url(route('guest.export.download', $exportKey))
+                                ->url($downloadUrl)
                                 ->openUrlInNewTab()
                         ])
                         ->send();
