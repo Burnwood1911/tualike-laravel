@@ -13,6 +13,7 @@ use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class GuestResource extends Resource
@@ -115,6 +116,12 @@ class GuestResource extends Resource
                 Filter::make('not_dispatched')
                     ->query(fn($query) => $query->where('dispatched', false))
                     ->label('Not Dispatched'),
+                Filter::make('whatsapp_dispatched')
+                    ->query(fn($query) => $query->where('whatsapp_dispatched', true))
+                    ->label('WhatsApp Dispatched'),
+                Filter::make('whatsapp_not_dispatched')
+                    ->query(fn($query) => $query->where('whatsapp_dispatched', false))
+                    ->label('WhatsApp Not Dispatched'),
                 SelectFilter::make('attendance_status')
                     ->options([
                         'attending'     => 'Attending',
@@ -137,6 +144,43 @@ class GuestResource extends Resource
                         app(ImportService::class)->dispatchSingle($record);
                     })
                     ->requiresConfirmation(),
+                Action::make('whatsappSingle')
+                    ->label('WhatsApp')
+                    ->icon('heroicon-o-chat-bubble-left-right')
+                    ->form([
+                        Forms\Components\Select::make('template_id')
+                            ->label('Message Template')
+                            ->searchable()
+                            ->options(function (): array {
+                                try {
+                                    $response = Http::withHeaders([
+                                        'Authorization' => 'Basic Yjg2YWRlYWIzZTNhMmQ2MzpaRGt3Wm1JMk5qUmxaVGsyWVdVM056aGlNelF3WkRjM1pqa3pNVE5rTjJSbE5tWTRZamhoTVRVMk56VmtPV00yWldJNFltWmlNalZqTlRJM1lUZzJaZz09',
+                                        'Content-Type'  => 'application/json',
+                                    ])->get('https://apichatcore.beem.africa/v1/message-templates/list');
+
+                                    if ($response->successful()) {
+                                        $data = $response->json();
+
+                                        return collect($data['data'] ?? [])
+                                            ->mapWithKeys(function ($template) {
+                                                return [$template['id'] => $template['name']];
+                                            })
+                                            ->toArray();
+                                    }
+                                } catch (\Exception $e) {
+                                    \Log::error('Failed to fetch templates: ' . $e->getMessage());
+                                }
+
+                                return [];
+                            })
+                            ->placeholder('Select a template...')
+                            ->required(),
+                    ])
+                    ->action(function (Guest $record, array $data) {
+                        app(ImportService::class)->handleDispatchWhatsappSingle($record, $data['template_id']);
+                    })
+                    ->requiresConfirmation()
+                    ->color('success'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -226,6 +270,58 @@ class GuestResource extends Resource
                 ->action(function (array $data) {
                     app(ImportService::class)->handleImportAction($data);
                 }),
+            Action::make('export')
+                ->label('Export Guests')
+                ->icon('heroicon-o-arrow-down-tray')
+                ->form([
+                    Forms\Components\Select::make('event_id')
+                        ->required()
+                        ->relationship(name: 'event', titleAttribute: 'name')
+                        ->searchable()
+                        ->preload()
+                        ->native(false)
+                        ->label('Event'),
+                    Forms\Components\Select::make('filters')
+                        ->multiple()
+                        ->options([
+                            'generated' => 'Generated Only',
+                            'not_generated' => 'Not Generated Only',
+                            'dispatched' => 'SMS Dispatched Only',
+                            'not_dispatched' => 'SMS Not Dispatched Only',
+                            'whatsapp_dispatched' => 'WhatsApp Dispatched Only',
+                            'whatsapp_not_dispatched' => 'WhatsApp Not Dispatched Only',
+                            'attending' => 'Attending Only',
+                            'not_attending' => 'Not Attending Only',
+                            'pending' => 'Pending Only',
+                        ])
+                        ->placeholder('Select filters (optional)')
+                        ->label('Filters')
+                        ->native(false),
+                ])
+                ->action(function (array $data) {
+                    $exportService = app(ImportService::class);
+                    $exportData = $exportService->handleGuestExport($data);
+                    
+                    // Store file in storage and redirect to download
+                    $filename = $exportData['filename'];
+                    $path = 'exports/' . $filename;
+                    
+                    \Storage::disk('public')->put($path, $exportData['content']);
+                    
+                    // Show success notification and provide download link
+                    \Filament\Notifications\Notification::make()
+                        ->title('Export Ready')
+                        ->body('Your guest export is ready for download.')
+                        ->success()
+                        ->actions([
+                            \Filament\Notifications\Actions\Action::make('download')
+                                ->label('Download CSV')
+                                ->url(\Storage::disk('public')->url($path))
+                                ->openUrlInNewTab()
+                        ])
+                        ->send();
+                })
+                ->color('info'),
 
         ])->poll('60s');
     }

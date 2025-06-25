@@ -179,6 +179,52 @@ class ImportService
 
     }
 
+    public function handleDispatchWhatsappSingle(Guest $guest, int $templateId): void
+    {
+        $link = $guest->final_url;
+
+        $payload = [
+            'from_addr'           => '255696971941',
+            'destination_addr'    => [
+                [
+                    'phoneNumber' => $guest->phone,
+                    'params'      => [
+                        $guest->name,
+                        $guest->qr,
+                    ],
+                ],
+            ],
+            'channel'             => 'whatsapp',
+            'content'             => [
+                'mediaUrl' => $link,
+            ],
+            'messageTemplateData' => [
+                'isTemplateMessage' => true,
+                'id'                => $templateId,
+            ],
+        ];
+
+        try {
+            $response = Http::withHeaders([
+                'Authorization' => 'Basic Yjg2YWRlYWIzZTNhMmQ2MzpaRGt3Wm1JMk5qUmxaVGsyWVdVM056aGlNelF3WkRjM1pqa3pNVE5rTjJSbE5tWTRZamhoTVRVMk56VmtPV00yWldJNFltWmlNalZqTlRJM1lUZzJaZz09',
+                'Content-Type'  => 'application/json',
+            ])
+                ->timeout(30)
+                ->post('https://apibroadcast.beem.africa/v1/broadcast/template/api-send', $payload);
+
+            if ($response->successful()) {
+                $guest->update([
+                    'whatsapp_dispatched' => true,
+                ]);
+                \Log::info("WhatsApp message sent successfully to {$guest->name}: " . $response->body());
+            } else {
+                \Log::error("WhatsApp API error for {$guest->name}: " . $response->body() . " " . $link);
+            }
+        } catch (\Exception $e) {
+            \Log::error("WhatsApp API exception for {$guest->name}: " . $e->getMessage());
+        }
+    }
+
     public function generateSingle(Guest $guest): void
     {
         GenerateSingle::dispatch($guest->id);
@@ -205,5 +251,109 @@ class ImportService
                 'event_id'   => $eventId,
             ]);
         }
+    }
+
+    public function handleGuestExport(array $data)
+    {
+        $eventId = $data['event_id'];
+        $filters = $data['filters'] ?? [];
+
+        // Start with guests from the selected event
+        $query = Guest::where('event_id', $eventId)->with('event');
+
+        // Apply filters
+        foreach ($filters as $filter) {
+            switch ($filter) {
+                case 'generated':
+                    $query->where('generated', true);
+                    break;
+                case 'not_generated':
+                    $query->where('generated', false);
+                    break;
+                case 'dispatched':
+                    $query->where('dispatched', true);
+                    break;
+                case 'not_dispatched':
+                    $query->where('dispatched', false);
+                    break;
+                case 'whatsapp_dispatched':
+                    $query->where('whatsapp_dispatched', true);
+                    break;
+                case 'whatsapp_not_dispatched':
+                    $query->where('whatsapp_dispatched', false);
+                    break;
+                case 'attending':
+                    $query->where('attendance_status', 'attending');
+                    break;
+                case 'not_attending':
+                    $query->where('attendance_status', 'not_attending');
+                    break;
+                case 'pending':
+                    $query->where('attendance_status', 'pending');
+                    break;
+            }
+        }
+
+        $guests = $query->get();
+        $event = $guests->first()?->event;
+
+        // Create CSV content
+        $csvContent = [];
+        
+        // CSV Headers
+        $csvContent[] = [
+            'Name',
+            'Guest Type',
+            'Phone',
+            'Uses',
+            'QR Code',
+            'Generated',
+            'SMS Dispatched',
+            'WhatsApp Dispatched',
+            'Attendance Status',
+            'Event Name',
+            'Final URL',
+            'Created At',
+            'Updated At'
+        ];
+
+        // CSV Data
+        foreach ($guests as $guest) {
+            $csvContent[] = [
+                $guest->name,
+                $guest->guest_type,
+                $guest->phone,
+                $guest->uses,
+                $guest->qr,
+                $guest->generated ? 'Yes' : 'No',
+                $guest->dispatched ? 'Yes' : 'No',
+                $guest->whatsapp_dispatched ? 'Yes' : 'No',
+                $guest->attendance_status ?? 'pending',
+                $guest->event?->name ?? '',
+                $guest->final_url ?? '',
+                $guest->created_at?->format('Y-m-d H:i:s') ?? '',
+                $guest->updated_at?->format('Y-m-d H:i:s') ?? ''
+            ];
+        }
+
+        // Generate filename
+        $eventName = $event?->name ? Str::slug($event->name) : 'event';
+        $filterSuffix = empty($filters) ? '' : '-' . implode('-', $filters);
+        $filename = "guests-{$eventName}{$filterSuffix}-" . now()->format('Y-m-d-H-i-s') . '.csv';
+
+        // Create CSV file content
+        $output = fopen('php://temp', 'r+');
+        foreach ($csvContent as $row) {
+            fputcsv($output, $row);
+        }
+        rewind($output);
+        $csvData = stream_get_contents($output);
+        fclose($output);
+
+        // Return data for the action to handle
+        return [
+            'content' => $csvData,
+            'filename' => $filename
+        ];
     }
 }
