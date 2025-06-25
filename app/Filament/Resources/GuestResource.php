@@ -12,6 +12,7 @@ use Filament\Tables\Actions\Action;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -302,11 +303,19 @@ class GuestResource extends Resource
                     $exportService = app(ImportService::class);
                     $exportData = $exportService->handleGuestExport($data);
                     
-                    // Store file in storage and redirect to download
+                    // Store file in private storage with a unique key
+                    $exportKey = \Illuminate\Support\Str::uuid();
                     $filename = $exportData['filename'];
-                    $path = 'exports/' . $filename;
+                    $path = 'temp-exports/' . $exportKey . '.csv';
                     
-                    \Storage::disk('public')->put($path, $exportData['content']);
+                    \Storage::put($path, $exportData['content']);
+                    
+                    // Store metadata in cache for 1 hour
+                    \Cache::put("export_meta_{$exportKey}", [
+                        'filename' => $filename,
+                        'path' => $path,
+                        'created_at' => now()
+                    ], 3600);
                     
                     // Show success notification and provide download link
                     \Filament\Notifications\Notification::make()
@@ -316,7 +325,7 @@ class GuestResource extends Resource
                         ->actions([
                             \Filament\Notifications\Actions\Action::make('download')
                                 ->label('Download CSV')
-                                ->url(\Storage::disk('public')->url($path))
+                                ->url(route('guest.export.download', $exportKey))
                                 ->openUrlInNewTab()
                         ])
                         ->send();
