@@ -340,7 +340,7 @@
                   </div>
                 </a>
               </div>
-              <p class="text-[#6e6388] text-base font-normal leading-normal">© 2024 TUALIKE. All rights reserved.</p>
+              <p class="text-[#6e6388] text-base font-normal leading-normal">© 2025 R & O TECHNOLOGIES LIMITED. All rights reserved.</p>
             </footer>
           </div>
         </footer>
